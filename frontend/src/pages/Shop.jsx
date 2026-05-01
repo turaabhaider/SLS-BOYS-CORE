@@ -7,11 +7,14 @@ const Shop = ({ addToCart }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Define the API base URL - using Railway variable or local fallback
+  const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        // If your backend isn't ready yet, you can temporarily use the sample array below
-        const { data } = await axios.get('http://localhost:5000/api/products');
+        // FIXED: Using the dynamic API_BASE instead of hardcoded localhost
+        const { data } = await axios.get(`${API_BASE}/api/products`);
         setProducts(data);
         setLoading(false);
       } catch (error) {
@@ -20,7 +23,7 @@ const Shop = ({ addToCart }) => {
       }
     };
     fetchProducts();
-  }, []);
+  }, [API_BASE]);
 
   return (
     <div className="page-container">
@@ -37,7 +40,6 @@ const Shop = ({ addToCart }) => {
               <div className="product-card">
                 <Link to={`/product/${product.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                   <div className="product-img" style={{ overflow: 'hidden', background: '#111' }}>
-                    {/* The fix: Adding the image tag */}
                     <img 
                       src={product.image} 
                       alt={product.name} 
@@ -47,7 +49,6 @@ const Shop = ({ addToCart }) => {
                         objectFit: 'cover',
                         transition: 'transform 0.5s ease' 
                       }} 
-                      // Adding a hover effect directly or via CSS
                       onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
                       onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
                     />
