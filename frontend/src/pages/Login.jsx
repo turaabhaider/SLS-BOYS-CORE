@@ -8,19 +8,16 @@ const Login = ({ setUser }) => {
   const [formData, setFormData] = useState({ name: '', email: '', password: '' });
   const navigate = useNavigate();
 
+  // Define your base URL once at the top of the component or function
+  const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
   const handleAction = async (e) => {
     e.preventDefault();
     const endpoint = isLogin ? '/api/login' : '/api/register';
     
     try {
-      // Use an environment variable, fallback to localhost for development
-       const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-
-     const handleAction = async (e) => {
-     // ...
-     const { data } = await axios.post(`${API_URL}${endpoint}`, formData);
-     // ...
-    };
+      // Corrected Axios call using the dynamic URL
+      const { data } = await axios.post(`${API_BASE}${endpoint}`, formData);
       
       if (isLogin) {
         // 1. Save user to LocalStorage
@@ -34,6 +31,8 @@ const Login = ({ setUser }) => {
         setIsLogin(true); 
       }
     } catch (error) {
+      // Improved error logging for debugging Railway issues
+      console.error("Login/Register Error:", error.response?.data || error.message);
       alert(error.response?.data?.message || "Something went wrong");
     }
   };
