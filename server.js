@@ -1,10 +1,13 @@
 const express = require('express');
 const cors = require('cors');
 const app = express();
-const PORT = 5000;
+
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:5173', 'https://your-frontend-name.up.railway.app'],
+  credentials: true
+}));
 app.use(express.json());
 
 // --- DATA STORAGE ---
@@ -106,6 +109,7 @@ app.get('/api/orders', (req, res) => {
   res.json(orders);
 });
 
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
+  console.log(`Server is active on port ${PORT}`);
 });

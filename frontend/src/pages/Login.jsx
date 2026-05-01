@@ -13,7 +13,14 @@ const Login = ({ setUser }) => {
     const endpoint = isLogin ? '/api/login' : '/api/register';
     
     try {
-      const { data } = await axios.post(`http://localhost:5000${endpoint}`, formData);
+      // Use an environment variable, fallback to localhost for development
+       const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
+     const handleAction = async (e) => {
+     // ...
+     const { data } = await axios.post(`${API_URL}${endpoint}`, formData);
+     // ...
+    };
       
       if (isLogin) {
         // 1. Save user to LocalStorage
