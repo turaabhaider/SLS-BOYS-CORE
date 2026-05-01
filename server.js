@@ -2,15 +2,33 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 
+// --- 1. DYNAMIC CORS CONFIGURATION ---
+// This allows your frontend to communicate with this backend.
+const allowedOrigins = [
+  'http://localhost:5173', // Local development
+  'https://sls-boys-core-production.up.railway.app' // Your live Railway frontend
+];
 
-// Middleware
 app.use(cors({
-  origin: ['http://localhost:5173', 'https://your-frontend-name.up.railway.app'],
-  credentials: true
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+// --- 2. MIDDLEWARE ---
+// Must be placed BEFORE routes
 app.use(express.json());
 
-// --- DATA STORAGE ---
+// --- 3. DATA STORAGE (In-Memory) ---
 const products = [
   {
     id: 1,
@@ -49,7 +67,7 @@ const products = [
 let users = []; 
 let orders = []; 
 
-// --- PRODUCT ROUTES ---
+// --- 4. PRODUCT ROUTES ---
 app.get('/api/products', (req, res) => {
   res.json(products);
 });
@@ -63,7 +81,7 @@ app.get('/api/products/:id', (req, res) => {
   }
 });
 
-// --- AUTHENTICATION ROUTES ---
+// --- 5. AUTHENTICATION ROUTES ---
 app.post('/api/register', (req, res) => {
   const { name, email, password } = req.body;
   const userExists = users.find(u => u.email === email);
@@ -74,7 +92,10 @@ app.post('/api/register', (req, res) => {
 
   const newUser = { id: users.length + 1, name, email, password };
   users.push(newUser);
-  res.status(201).json({ message: "Account created successfully!", user: { name: newUser.name, email: newUser.email } });
+  res.status(201).json({ 
+    message: "Account created successfully!", 
+    user: { name: newUser.name, email: newUser.email } 
+  });
 });
 
 app.post('/api/login', (req, res) => {
@@ -82,13 +103,16 @@ app.post('/api/login', (req, res) => {
   const user = users.find(u => u.email === email && u.password === password);
 
   if (user) {
-    res.json({ message: `Welcome, ${user.name}`, user: { name: user.name, email: user.email } });
+    res.json({ 
+      message: `Welcome, ${user.name}`, 
+      user: { name: user.name, email: user.email } 
+    });
   } else {
     res.status(401).json({ message: "Invalid credentials." });
   }
 });
 
-// --- ORDER ROUTES ---
+// --- 6. ORDER ROUTES ---
 app.post('/api/orders', (req, res) => {
   const { customer, items, total } = req.body;
   
@@ -109,6 +133,7 @@ app.get('/api/orders', (req, res) => {
   res.json(orders);
 });
 
+// --- 7. SERVER START ---
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server is active on port ${PORT}`);
