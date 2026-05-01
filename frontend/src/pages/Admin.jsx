@@ -8,24 +8,26 @@ const Admin = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [passwordInput, setPasswordInput] = useState('');
 
-  // CHANGED: Password now uses a DASH to match your request
+  // Define the API base URL for Railway compatibility
+  const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
   const ADMIN_PASSWORD = "TURAAB-DEV"; 
 
   const handleLogin = (e) => {
     e.preventDefault();
-    // Using .trim() ensures no accidental spaces cause a login failure
     if (passwordInput.trim() === ADMIN_PASSWORD) {
       setIsAuthenticated(true);
       fetchOrders();
     } else {
       alert("UNAUTHORIZED ACCESS: INVALID CREDENTIALS");
-      setPasswordInput(''); // Clear the input on failure
+      setPasswordInput('');
     }
   };
 
   const fetchOrders = async () => {
     try {
-      const { data } = await axios.get('http://localhost:5000/api/orders');
+      // FIXED: Using dynamic API_BASE instead of hardcoded localhost
+      const { data } = await axios.get(`${API_BASE}/api/orders`);
       setOrders(data);
       setLoading(false);
     } catch (error) {
@@ -76,25 +78,37 @@ const Admin = () => {
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', background: 'var(--bg-surface)' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--border)', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                  <th style={{ padding: '1.5rem 1rem' }}>ORDER ID</th>
-                  <th style={{ padding: '1.5rem 1rem' }}>CUSTOMER</th>
-                  <th style={{ padding: '1.5rem 1rem' }}>ITEMS</th>
-                  <th style={{ padding: '1.5rem 1rem' }}>TOTAL</th>
-                  <th style={{ padding: '1.5rem 1rem' }}>STATUS</th>
+                  {/* FIXED: Implementing the requested 8-column layout */}
+                  <th style={{ padding: '1.5rem 1rem' }}>CITY NAME</th>
+                  <th style={{ padding: '1.5rem 1rem' }}>EVENT OR VENUE</th>
+                  <th style={{ padding: '1.5rem 1rem' }}>ADDRESS</th>
+                  <th style={{ padding: '1.5rem 1rem' }}> </th> {/* Empty Space */}
+                  <th style={{ padding: '1.5rem 1rem' }}>PHONE NUMBER</th>
+                  <th style={{ padding: '1.5rem 1rem' }}> </th> {/* Empty Space */}
+                  <th style={{ padding: '1.5rem 1rem' }}>WEBSITE URL</th>
+                  <th style={{ padding: '1.5rem 1rem' }}>ACCOMMODATION</th>
                 </tr>
               </thead>
               <tbody>
                 {orders.map((order, index) => (
                   <tr key={index} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                    <td style={{ padding: '1.5rem 1rem', fontWeight: 'bold' }}>{order.id}</td>
+                    <td style={{ padding: '1.5rem 1rem' }}>{order.customer.city}</td>
                     <td style={{ padding: '1.5rem 1rem', fontSize: '0.85rem' }}>
-                      {order.customer.firstName} {order.customer.lastName}
+                      {order.items.map(item => item.name).join(', ')}
                     </td>
-                    <td style={{ padding: '1.5rem 1rem', fontSize: '0.85rem' }}>{order.items.length} units</td>
-                    <td style={{ padding: '1.5rem 1rem', fontWeight: 'bold' }}>${order.total.toFixed(2)}</td>
+                    <td style={{ padding: '1.5rem 1rem' }}>{order.customer.address}</td>
+                    <td style={{ padding: '1.5rem 1rem' }}></td> {/* Empty Space */}
+                    <td style={{ padding: '1.5rem 1rem' }}>
+                      {/* Note: Ensuring no '+' signs in phone numbers per requirements */}
+                      {order.customer.phone ? order.customer.phone.replace('+', '') : 'N/A'}
+                    </td>
+                    <td style={{ padding: '1.5rem 1rem' }}></td> {/* Empty Space */}
+                    <td style={{ padding: '1.5rem 1rem', fontSize: '0.75rem' }}>
+                      sls-boys-core.up.railway.app
+                    </td>
                     <td style={{ padding: '1.5rem 1rem' }}>
                       <span style={{ background: '#111', border: '1px solid var(--border)', padding: '0.3rem 0.8rem', borderRadius: '4px', fontSize: '0.65rem' }}>
-                        {order.status.toUpperCase()}
+                        STANDARD
                       </span>
                     </td>
                   </tr>
