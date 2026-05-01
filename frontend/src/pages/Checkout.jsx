@@ -7,6 +7,9 @@ const Checkout = ({ cart, clearCart }) => {
   const navigate = useNavigate();
   const total = cart.reduce((sum, item) => sum + item.price, 0);
 
+  // Define the API base URL for Railway compatibility
+  const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
   // Form State
   const [formData, setFormData] = useState({
     firstName: '', lastName: '', address: '', city: '', zip: ''
@@ -17,8 +20,8 @@ const Checkout = ({ cart, clearCart }) => {
     if (cart.length === 0) return alert("Your cart is empty.");
 
     try {
-      // Send order to backend
-      const { data } = await axios.post('http://localhost:5000/api/orders', {
+      // FIXED: Using dynamic API_BASE for the order submission
+      const { data } = await axios.post(`${API_BASE}/api/orders`, {
         customer: formData,
         items: cart,
         total: total
@@ -26,16 +29,22 @@ const Checkout = ({ cart, clearCart }) => {
 
       alert(`Payment Successful! Your order ID is ${data.orderId}`);
       clearCart(); // Empty the bag
-      navigate('/'); // Send back to home
+      navigate('/'); // Redirect to home
 
     } catch (error) {
+      console.error("Checkout error:", error);
       alert("Checkout failed. Please try again.");
     }
   };
 
   const inputStyle = {
-    width: '100%', padding: '1rem', background: 'rgba(255, 255, 255, 0.03)',
-    border: '1px solid var(--border)', color: '#fff', marginBottom: '1rem', outline: 'none'
+    width: '100%', 
+    padding: '1rem', 
+    background: 'rgba(255, 255, 255, 0.03)',
+    border: '1px solid var(--border)', 
+    color: '#fff', 
+    marginBottom: '1rem', 
+    outline: 'none'
   };
 
   return (
@@ -44,7 +53,7 @@ const Checkout = ({ cart, clearCart }) => {
         <h1 style={{ textAlign: 'center', marginBottom: '4rem', letterSpacing: '3px' }}>SECURE CHECKOUT</h1>
       </AnimatedSection>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '3rem', flexWrap: 'wrap' }}>
+      <div className="checkout-layout" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '3rem' }}>
         <AnimatedSection delay={0.2} float={false}>
           <h3 style={{ marginBottom: '1.5rem', fontSize: '0.8rem', letterSpacing: '2px' }}>SHIPPING DETAILS</h3>
           
@@ -73,7 +82,7 @@ const Checkout = ({ cart, clearCart }) => {
           </form>
         </AnimatedSection>
 
-        <div style={{ borderLeft: '1px solid var(--border)', paddingLeft: '3rem' }}>
+        <div className="order-review" style={{ borderLeft: '1px solid var(--border)', paddingLeft: '3rem' }}>
           <h3 style={{ marginBottom: '1.5rem', fontSize: '0.8rem', letterSpacing: '2px' }}>ORDER REVIEW</h3>
           {cart.map((item, i) => (
             <div key={i} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', fontSize: '0.9rem' }}>
